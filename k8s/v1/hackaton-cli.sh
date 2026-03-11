@@ -7,7 +7,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-echo "🚀 Setup Tech Food Kubernetes"
+echo "🚀 Video Processing Setup"
 
 # Verificar se minikube está rodando
 if ! kubectl get nodes &> /dev/null; then
