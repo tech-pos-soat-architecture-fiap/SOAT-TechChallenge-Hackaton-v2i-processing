@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
@@ -14,9 +15,11 @@ import java.util.zip.ZipOutputStream;
 @Service
 public class VideoProcessingService {
 
-    public void extractFramesAndStream(Path videoPath, OutputStream outputStream) throws IOException {
+    public byte[] extractFramesAndStream(Path videoPath) throws IOException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
         try (FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(videoPath.toFile());
-             ZipOutputStream zos = new ZipOutputStream(outputStream)) {
+             ZipOutputStream zos = new ZipOutputStream(byteArrayOutputStream)) {
 
             grabber.start();
 
@@ -43,7 +46,16 @@ public class VideoProcessingService {
             }
 
             grabber.stop();
+            zos.finish();
         }
+
+        return byteArrayOutputStream.toByteArray();
+    }
+
+    public void extractFramesAndStream(Path videoPath, OutputStream outputStream) throws IOException {
+        byte[] zipContent = extractFramesAndStream(videoPath);
+        outputStream.write(zipContent);
+        outputStream.flush();
     }
 
 }
