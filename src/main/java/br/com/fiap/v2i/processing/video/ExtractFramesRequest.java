@@ -15,4 +15,9 @@ public record ExtractFramesRequest(String url) {
 
         return filename;
     }
+
+    public String videoHashFromUrl() {
+        // TODO: get file folder
+        return "";
+    }
 }
