@@ -1,6 +1,8 @@
 package br.com.fiap.v2i.processing.video;
 
+import br.com.fiap.v2i.processing.client.V2iWebClient;
 import org.junit.jupiter.api.Test;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
@@ -29,6 +31,12 @@ class VideoControllerTest {
     private VideoDownloadService videoDownloadService;
     @MockitoBean
     private VideoProcessingService videoProcessingService;
+
+    @MockitoBean
+    private V2iWebClient v2iWebClient;
+
+    @MockitoBean
+    private RabbitTemplate rabbitTemplate;
 
     @Test
     void extractFrames_returns_zip_response() throws Exception {
