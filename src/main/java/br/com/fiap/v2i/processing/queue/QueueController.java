@@ -22,7 +22,6 @@ public class QueueController {
     public ResponseEntity<?> testQueue() throws InterruptedException {
         System.out.println("Sending message...");
         rabbitTemplate.convertAndSend(QueueConfig.topicExchangeName, "video.process", "Hello from RabbitMQ!");
-        receiver.getLatch().await(10000, TimeUnit.MILLISECONDS);
 
         return ResponseEntity.ok().build();
     }

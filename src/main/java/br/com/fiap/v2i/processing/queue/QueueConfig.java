@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 public class QueueConfig {
 
     public static final String topicExchangeName = "video-processing-exchange";
-    static final String queueName = "video-processing-queue";
+    public static final String queueName = "video-processing-queue";
 
     @Bean
     Queue queue() {

@@ -24,12 +24,13 @@ services:
       - db
 
   rabbitmq:
-    image: 'rabbitmq:latest'
+    image: 'rabbitmq:3.13-management-alpine'
     environment:
       - 'RABBITMQ_DEFAULT_PASS=root'
       - 'RABBITMQ_DEFAULT_USER=root'
     ports:
       - "5672:5672"
+      - "15672:15672"
     profiles:
       - dev
       - prod

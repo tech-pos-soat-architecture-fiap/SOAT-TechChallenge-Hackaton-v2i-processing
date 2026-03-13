@@ -3,7 +3,7 @@ package br.com.fiap.v2i.processing.video;
 import java.net.URI;
 import java.nio.file.Paths;
 
-public record ExtractFramesRequest(String url) {
+public record ExtractFramesRequest(String url, String key, String bucket) {
 
     public String filenameFromUrl() {
         String path = URI.create(url).getPath();
@@ -17,7 +17,6 @@ public record ExtractFramesRequest(String url) {
     }
 
     public String videoHashFromUrl() {
-        // TODO: get file folder
-        return "";
+        return key;
     }
 }

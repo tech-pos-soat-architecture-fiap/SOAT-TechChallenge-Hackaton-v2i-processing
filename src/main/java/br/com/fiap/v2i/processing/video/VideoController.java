@@ -29,12 +29,13 @@ public class VideoController {
         response.setHeader("Content-Disposition", "attachment; filename=frames.zip");
         response.setStatus(HttpServletResponse.SC_OK);
 
-        v2iWebClient.markAsProcessing(request.videoHashFromUrl());
+        System.out.println("Key: " + request.key());
+        v2iWebClient.markAsProcessing(request.key());
 
         try (DownloadedVideo downloadedVideo = videoDownloadService.download(request.url(), request.filenameFromUrl())) {
             videoProcessingService.extractFramesAndStream(downloadedVideo.path(), response.getOutputStream());
             rabbitTemplate.convertAndSend("video.processed", request.videoHashFromUrl());
-            v2iWebClient.markAsComplete(request.videoHashFromUrl());
+            v2iWebClient.markAsComplete(request.key());
         } catch (IOException e) {
             v2iWebClient.markAsError(request.videoHashFromUrl());
             throw new VideoProcessingException("Error downloading or processing video from URL", e);

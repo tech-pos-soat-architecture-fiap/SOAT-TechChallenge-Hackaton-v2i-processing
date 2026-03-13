@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: v2i-processing
-          image: hackaton-v2i-processing:v4
+          image: hackaton-v2i-processing:v8
           imagePullPolicy: Never
           ports:
             - containerPort: 8000
