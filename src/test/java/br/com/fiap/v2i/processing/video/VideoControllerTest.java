@@ -41,15 +41,15 @@ class VideoControllerTest {
     @Test
     void extractFrames_returns_zip_response() throws Exception {
         String body = """
-                {
-                  "url": "http://localhost/dummy.mp4",
-                  "filenameFromUrl": "dummy.mp4"
-                }
-                """;
+            {
+              "url": "http://localhost/dummy.mp4",
+              "filenameFromUrl": "dummy.mp4"
+            }
+            """;
 
         DownloadedVideo downloadedVideo = new DownloadedVideo(Path.of("tempDir"), Path.of("video.mp4"));
         given(videoDownloadService.download(anyString(), anyString())).willReturn(downloadedVideo);
-        willDoNothing().given(videoProcessingService).extractFramesAndStream(any(), any());
+        given(videoProcessingService.extractFramesAndStream(any())).willReturn(new byte[] { 1, 2, 3 });
 
         MvcResult result = mockMvc.perform(
                         post("/extract-frames")
@@ -63,6 +63,7 @@ class VideoControllerTest {
 
         byte[] responseBytes = result.getResponse().getContentAsByteArray();
         assertThat(responseBytes).isNotNull();
+        assertThat(responseBytes).isNotEmpty();
     }
 
 }
