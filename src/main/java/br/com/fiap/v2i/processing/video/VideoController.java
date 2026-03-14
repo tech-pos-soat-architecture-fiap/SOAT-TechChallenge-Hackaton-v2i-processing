@@ -1,6 +1,9 @@
 package br.com.fiap.v2i.processing.video;
 
 import br.com.fiap.v2i.processing.client.V2iWebClient;
+import br.com.fiap.v2i.processing.client.UpdateVideoErrorStatusRequest;
+import br.com.fiap.v2i.processing.client.UpdateVideoStatusRequest;
+import br.com.fiap.v2i.processing.notification.VideoProcessedMessage;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.http.MediaType;
@@ -33,14 +36,50 @@ public class VideoController {
         v2iWebClient.markAsProcessing(request.key());
 
         try (DownloadedVideo downloadedVideo = videoDownloadService.download(request.url(), request.filenameFromUrl())) {
-            videoProcessingService.extractFramesAndStream(downloadedVideo.path(), response.getOutputStream());
-            rabbitTemplate.convertAndSend("video.processed", request.videoHashFromUrl());
-            v2iWebClient.markAsComplete(request.key());
-        } catch (IOException e) {
-            v2iWebClient.markAsError(request.videoHashFromUrl());
-            throw new VideoProcessingException("Error downloading or processing video from URL", e);
-        }
+            byte[] zipContent = videoProcessingService.extractFramesAndStream(downloadedVideo.path());
+            response.getOutputStream().write(zipContent);
+            response.getOutputStream().flush();
 
+            // Gerar URL de download (presigned URL do S3)
+            String downloadUrl = generatePresignedDownloadUrl(request.videoId());
+
+            // Atualizar status no v2i-web com URL de download
+            v2iWebClient.markAsComplete(new UpdateVideoStatusRequest(request.key(), downloadUrl));
+
+            // Enviar mensagem de sucesso ao RabbitMQ
+            VideoProcessedMessage successMessage = new VideoProcessedMessage(
+                    request.videoId(),
+                    request.userEmail(),
+                    "SUCCESS",
+                    downloadUrl,
+                    null
+            );
+            rabbitTemplate.convertAndSend("video.processed", successMessage);
+
+        } catch (IOException e) {
+            String errorMessage = "Error downloading or processing video: " + e.getMessage();
+
+            // Atualizar status no v2i-web com mensagem de erro
+            v2iWebClient.markAsError(new UpdateVideoErrorStatusRequest(request.key(), errorMessage));
+
+            // Enviar mensagem de erro ao RabbitMQ
+            VideoProcessedMessage errorMsg = new VideoProcessedMessage(
+                    request.videoId(),
+                    request.userEmail(),
+                    "FAILURE",
+                    null,
+                    errorMessage
+            );
+            rabbitTemplate.convertAndSend("video.processed", errorMsg);
+
+            throw new VideoProcessingException(errorMessage, e);
+        }
+    }
+
+    private String generatePresignedDownloadUrl(String videoId) {
+        // TODO: Implementar geração de URL presigned do S3 para o arquivo ZIP
+        // Por enquanto, retorna uma URL genérica
+        return "/api/video/download/" + videoId;
     }
 
 }
