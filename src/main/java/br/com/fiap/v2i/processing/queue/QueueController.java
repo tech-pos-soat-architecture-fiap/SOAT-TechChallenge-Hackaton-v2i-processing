@@ -18,11 +18,4 @@ public class QueueController {
         this.receiver = receiver;
     }
 
-    @GetMapping("/test-queue")
-    public ResponseEntity<?> testQueue() throws InterruptedException {
-        System.out.println("Sending message...");
-        rabbitTemplate.convertAndSend(QueueConfig.topicExchangeName, "video.process", "Hello from RabbitMQ!");
-
-        return ResponseEntity.ok().build();
-    }
 }
